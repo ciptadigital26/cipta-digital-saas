@@ -104,6 +104,7 @@ dialog .mf{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:8
 .burger{display:none}
 
 /* ---------- LOGIN (muka depan) ---------- */
+[hidden]{display:none!important}
 body.locked{overflow:hidden}body.locked .app{display:none}body:not(.locked) #login{display:none}
 #login{position:fixed;inset:0;z-index:100;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:var(--bg);overflow:auto}
 .lg-side{position:relative;overflow:hidden;background:var(--grad);color:#fff;padding:clamp(28px,5vw,64px);display:flex;flex-direction:column;justify-content:space-between;gap:28px}
@@ -116,7 +117,7 @@ body.locked{overflow:hidden}body.locked .app{display:none}body:not(.locked) #log
 .lg-feat{display:flex;flex-wrap:wrap;gap:8px;position:relative;z-index:1}.lg-feat span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:6px 12px;border-radius:99px;font-size:13px}
 .lg-main{display:grid;place-items:center;padding:clamp(24px,5vw,56px)}
 .lg-card{width:min(400px,100%);display:grid;gap:16px}
-.lg-card h2{font-size:28px}.lg-card .note{margin-top:-8px}
+.lg-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--panel2);border-radius:12px}.lg-tabs button{border:0;background:none;border-radius:9px;min-height:42px;font-weight:600;color:var(--mute);cursor:pointer}.lg-tabs button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(37,99,235,.18)}.lg-tabs button.on[data-mode=tenant]{color:var(--dusk)}.lg-hint{font-size:13px;color:var(--mute);font-weight:400}.tenant-mode #roleWrap,.tenant-mode #tenantPick{display:none!important}#who{font-size:13px;color:var(--mute);white-space:nowrap}.lg-card h2{font-size:28px}.lg-card .note{margin-top:-8px}
 .lg-card label{display:grid;gap:6px;font-size:14px;font-weight:500}.lg-card label.row{display:flex;gap:10px}
 .pw{position:relative}.pw input{padding-right:84px}.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--rose);font-weight:600;cursor:pointer;min-height:36px;padding:0 10px}
 .lg-err{background:var(--badb);color:var(--bad);border-radius:10px;padding:10px 12px;font-size:14px}
@@ -144,10 +145,11 @@ body.locked{overflow:hidden}body.locked .app{display:none}body:not(.locked) #log
   </div>
   <div class="lg-main">
     <form class="lg-card" id="loginForm" autocomplete="on" novalidate>
-      <h2>Log masuk admin</h2><p class="note">Masukkan ID dan kata laluan untuk ke dashboard.</p>
+      <div class="lg-tabs" role="tablist"><button type="button" role="tab" data-mode="super" class="on">Super Admin</button><button type="button" role="tab" data-mode="tenant">Tenant Admin</button></div>
+      <h2 id="lgTitle">Log masuk admin</h2><p class="note" id="lgSub">Masukkan ID dan kata laluan untuk ke dashboard.</p>
       <div class="lg-err" id="lgErr" role="alert" hidden></div>
-      <label>ID pengguna<input id="lgUser" name="username" autocomplete="username" required autofocus></label>
-      <label>Kata laluan<span class="pw"><input id="lgPass" name="password" type="password" autocomplete="current-password" required><button type="button" id="lgShow">Tunjuk</button></span></label>
+      <label id="lgUserWrap">ID pengguna<input id="lgUser" name="username" autocomplete="username" required autofocus></label>
+      <label><span id="lgPassLbl">Kata laluan</span><span class="pw"><input id="lgPass" name="password" type="password" autocomplete="current-password" required><button type="button" id="lgShow">Tunjuk</button></span></label>
       <label class="row" style="font-weight:400"><input type="checkbox" id="lgRemember"> Kekal log masuk pada peranti ini</label>
       <button class="btn pri" id="lgBtn">Log masuk</button>
       <p class="lg-foot">© CIPTA DIGITAL SDN BHD · Ideas Into Innovation</p>
@@ -165,7 +167,7 @@ body.locked{overflow:hidden}body.locked .app{display:none}body:not(.locked) #log
       <button class="btn icon burger" id="burger" aria-label="Menu">☰</button>
       <button class="btn icon hidem" id="collapse" aria-label="Collapse sidebar">⇤</button>
       <div class="grow"></div>
-      <label class="row note"><span class="hidem">Lihat sebagai</span>
+      <span id="who"></span><label class="row note" id="roleWrap"><span class="hidem">Lihat sebagai</span>
         <select id="role" style="width:auto"><option value="super">Super Admin</option><option value="admin">Tenant Admin</option><option value="staff">Tenant Staff</option></select></label>
       <select id="tenantPick" style="width:auto;max-width:200px" aria-label="Tenant"></select>
       <button class="btn icon" id="theme" aria-label="Tukar tema">◐</button>
@@ -292,7 +294,7 @@ V.tenants=()=>{let rows=S.tenants.filter(t=>match(t,['name','slug','email'])&&(!
   return head('Tenant Management','Daftar, edit, gantung dan padam tenant.','<button class="btn pri" data-act="tenant-new">+ Tenant baharu</button>')+
   `<div class="card">${tools('Cari tenant…',[['active','Aktif'],['suspended','Digantung'],['inactive','Tidak aktif']])}${table([
    {h:'Tenant',f:t=>`<b>${esc(t.name)}</b><br><span class="note">${esc(t.slug)}.${esc(S.global.root)}</span>`},{h:'Pakej',f:t=>esc(P(t.plan)?.name)},{h:'Status',f:t=>pill(t.status)},{h:'Langganan',f:t=>pill(t.sub)},{h:'Daftar',f:t=>new Date(t.created).toLocaleDateString('ms-MY')}],rows,
-   t=>ab('tenant-edit',t.id,'Edit')+ab('tenant-toggle',t.id,t.status==='active'?'Gantung':'Aktifkan')+ab('tenant-open',t.id,'Dashboard')+ab('tenant-del',t.id,'Padam','danger'))}</div>`};
+   t=>ab('tenant-edit',t.id,'Edit')+ab('tenant-toggle',t.id,t.status==='active'?'Gantung':'Aktifkan')+ab('tenant-open',t.id,'Dashboard')+ab('tenant-link',t.id,'Pautan login')+ab('tenant-del',t.id,'Padam','danger'))}</div>`};
 
 V.websites=()=>{const rows=S.tenants.filter(t=>match(t,['name']));return head('Website Management','Setiap website, halaman aktif dan domain utama.')+
   `<div class="card">${tools('Cari website…')}${table([{h:'Website',f:t=>`<b>${esc(S.settings[t.id].title)}</b>`},{h:'Tenant',k:'name'},
@@ -412,13 +414,16 @@ V['t-support']=()=>head('Support','Hantar tiket kepada pasukan CIPTA DIGITAL.','
 V['t-account']=()=>{const u=me()||{};return head('Account Settings')+`<form class="card form" id="acctForm" style="max-width:560px">${field({k:'name',l:'Nama paparan'},u.name)}${field({k:'email',l:'E-mel',t:'email'},u.email)}
  <div class="lock">Kata laluan diurus oleh Supabase Auth. Pautan set semula dihantar ke e-mel anda.</div><div class="row"><button class="btn pri">Simpan</button><button class="btn" type="button" data-act="pw-reset">Hantar pautan set semula</button></div></form>`};
 
+var SES=null;
 // ---------------- RENDER ----------------
 function render(){
+  if(SES&&SES.type==='tenant'){UI.role='admin';UI.tenant=SES.tenant}
   const app=$('#app');const items=navFor();
   if(!items.find(([k])=>k===UI.view))UI.view=items[0][0];
   $('#nav').innerHTML=items.map(([k,l,i])=>`<button data-nav="${k}" class="${k===UI.view?'on':''}" title="${esc(l)}">${ic(i)}<span class="lbl">${esc(l)}</span></button>`).join('');
   $('#role').value=UI.role;
   const tp=$('#tenantPick');tp.style.display=UI.role==='super'?'none':'';
+  $('#who').textContent=SES&&SES.type==='tenant'?(T(SES.tenant)?.name||'')+' · Tenant Admin':'';
   tp.innerHTML=S.tenants.map(t=>`<option value="${t.id}" ${t.id===UI.tenant?'selected':''}>${esc(t.name)}</option>`).join('');
   if(UI.role==='staff'&&!me()){$('#view').innerHTML=head('Tiada akaun staff')+`<div class="lock">${esc(cur().name)} tiada staff (pakej ${esc(plan().name)}). Pilih tenant lain atau tukar ke Tenant Admin.</div>`;return}
   $('#view').innerHTML=V[UI.view]();app.classList.remove('open');saveUI();
@@ -436,12 +441,15 @@ const A={
    S.pages[id]=D0.pages.t0.map(p=>({...p,id:uid(),seo:p.title+' | '+v.name,meta:'Ketahui lebih lanjut tentang '+p.title.toLowerCase()+' di '+v.name+'.',active:true}));S.products[id]=[];S.media[id]=[];
    S.users.push({id:uid(),name:v.name+' (Admin)',email:v.email,role:'tenant_admin',tenant:id,perms:[],active:true});
    S.domains.push({id:uid(),tenant:id,host:slug+'.'+S.global.root,type:'subdomain',status:'active',ssl:'active',token:uid()+uid(),primary:true});
-   log('tenant.provision',v.name,id);toast('Tenant didaftarkan: 7 halaman templat & subdomain dicipta')}),
+   log('tenant.provision',v.name,id);toast('Tenant didaftarkan. Kata laluan tenant admin: '+slug)}),
  'tenant-edit':id=>{const t=find(S.tenants,id);modal('Edit tenant',formHTML([TENANT_F[0],TENANT_F[2],TENANT_F[3],{k:'plan',l:'Pakej',t:'select',o:S.plans.map(p=>[p.id,p.name])},{k:'sub',l:'Status langganan',t:'select',o:['trial','active','expired','suspended','cancelled']}],t),v=>{Object.assign(t,{name:v.name,email:v.email,phone:v.phone,plan:v.plan,sub:v.sub});log('tenant.update',t.name,id);toast('Tenant dikemas kini')})},
  'tenant-toggle':id=>{const t=find(S.tenants,id);const to=t.status==='active'?'suspended':'active';confirmBox(`${to==='active'?'Aktifkan':'Gantung'} ${t.name}? ${to==='suspended'?'Website awam dan dashboard tenant akan disekat.':''}`,()=>{t.status=to;if(to==='suspended')t.sub='suspended';else if(t.sub==='suspended')t.sub='active';log('tenant.'+(to==='active'?'activate':'suspend'),t.name,id);toast('Status dikemas kini')})},
  'tenant-del':id=>{const t=find(S.tenants,id);confirmBox(`Padam ${t.name} secara kekal? Semua website, halaman, media dan pengguna tenant ini akan dipadam.`,()=>{S.tenants=S.tenants.filter(x=>x.id!==id);['settings','pages','products','media'].forEach(k=>delete S[k][id]);
    S.users=S.users.filter(u=>u.tenant!==id);S.domains=S.domains.filter(d=>d.tenant!==id);log('tenant.delete',t.name,null);if(UI.tenant===id)UI.tenant=S.tenants[0]?.id;toast('Tenant dipadam')})},
  'tenant-open':id=>{UI.tenant=id;UI.role='admin';go('t-dash')},
+ 'tenant-link':id=>{const t=find(S.tenants,id),url=location.href.split('#')[0]+'#tenant';modal('Pautan login: '+t.name,`<p style="margin-top:0">Berikan maklumat ini kepada tenant admin <b>${esc(t.name)}</b>:</p>
+   <div class="form"><label>Pautan log masuk<input readonly value="${esc(url)}"></label><label>Kata laluan (nama syarikat)<input readonly value="${esc(t.slug)}"></label></div>
+   <p class="note">Tenant admin boleh guna nama subdomain (<code>${esc(t.slug)}</code>) atau nama penuh syarikat (<code>${esc(t.name)}</code>), huruf besar/kecil dan jarak tidak diambil kira.</p>`,null,'Tutup')},
  'plan-new':()=>modal('Pakej baharu',formHTML(PLAN_F,{days:30,websites:1,staff:0,analytics:'none'}),v=>{S.plans.push({id:uid(),...v,price:Math.round(+v.price*100),days:+v.days,websites:+v.websites,staff:+v.staff});log('plan.create',v.name);toast('Pakej dicipta')}),
  'plan-edit':id=>{const p=find(S.plans,id);modal('Edit '+p.name,formHTML(PLAN_F,{...p,price:p.price/100}),v=>{if(+v.price<0||+v.days<1){toast('Nilai tidak sah');return false}Object.assign(p,{...v,price:Math.round(+v.price*100),days:+v.days,websites:+v.websites,staff:+v.staff});log('plan.update',p.name);toast('Pakej dikemas kini')})},
  'api-new':()=>modal('Integrasi baharu',formHTML([{k:'provider',l:'Penyedia',req:1},{k:'name',l:'Kegunaan'},{k:'secret',l:'Nama Worker secret (cth: STRIPE_SECRET_KEY)',req:1}])+'<p class="note">Kunci sebenar ditetapkan dengan <code>wrangler secret put</code>, bukan di sini.</p>',v=>{if(!/^[A-Z0-9_]+$/.test(v.secret)){toast('Nama secret: huruf besar, nombor, _ sahaja');return false}S.integrations.push({id:uid(),...v,enabled:false});log('api.create',v.provider);toast('Integrasi ditambah')}),
@@ -515,8 +523,25 @@ let fails=0,lockUntil=0;
 const showErr=m=>{const e=$('#lgErr');e.textContent=m;e.hidden=!m};
 $('#lgLogo').src=document.querySelector('.logoFull').src;
 $('#lgShow').onclick=()=>{const i=$('#lgPass'),h=i.type==='password';i.type=h?'text':'password';$('#lgShow').textContent=h?'Sembunyi':'Tunjuk'};
+let MODE='super';
+const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function setMode(m){MODE=m;document.querySelectorAll('.lg-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
+  const t=m==='tenant';$('#lgUserWrap').hidden=t;$('#lgTitle').textContent=t?'Log masuk tenant admin':'Log masuk admin';
+  $('#lgSub').textContent=t?'Masukkan nama syarikat yang didaftarkan untuk ke dashboard syarikat anda.':'Masukkan ID dan kata laluan untuk ke dashboard.';
+  $('#lgPassLbl').innerHTML=t?'Kata laluan <span class="lg-hint">(nama syarikat, contoh: imtiaz)</span>':'Kata laluan';
+  $('#lgPass').autocomplete=t?'off':'current-password';showErr('');$('#lgPass').value='';setTimeout(()=>(t?$('#lgPass'):$('#lgUser')).focus(),30)}
+document.querySelectorAll('.lg-tabs button').forEach(b=>b.onclick=()=>{setMode(b.dataset.mode);history.replaceState(null,'',b.dataset.mode==='tenant'?'#tenant':location.pathname+location.search)});
+function startSession(ses,keep){SES=ses;store.set(AUTH_KEY,ses.type==='super'?AUTH_HASH:'tenant:'+ses.tenant,keep);
+  document.body.classList.toggle('tenant-mode',ses.type==='tenant');document.body.classList.remove('locked');
+  if(ses.type==='super'){UI.role='super';go('overview');toast('Selamat datang ke CIPTA DIGITAL Control Hub')}
+  else{UI.role='admin';UI.tenant=ses.tenant;go('t-dash');toast('Selamat datang, '+T(ses.tenant).name)}}
 $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();
   if(Date.now()<lockUntil)return showErr('Terlalu banyak cubaan. Cuba lagi dalam '+Math.ceil((lockUntil-Date.now())/1000)+' saat.');
+  if(MODE==='tenant'){const pw=norm($('#lgPass').value);if(!pw)return showErr('Sila masukkan nama syarikat.');
+    const t=S.tenants.find(x=>norm(x.slug)===pw||norm(x.name)===pw);
+    if(!t){fails++;if(fails>=5){lockUntil=Date.now()+30000;fails=0}$('#lgPass').value='';return showErr('Syarikat tidak dijumpai. Semak nama syarikat yang didaftarkan.')}
+    if(t.status!=='active')return showErr('Akaun '+t.name+' sedang digantung. Hubungi CIPTA DIGITAL.');
+    showErr('');$('#lgPass').value='';UI.role='admin';UI.tenant=t.id;log('auth.login','Tenant admin log masuk',t.id);save();return startSession({type:'tenant',tenant:t.id},$('#lgRemember').checked)}
   const u=$('#lgUser').value.trim().toLowerCase(),pw=$('#lgPass').value;
   if(!u||!pw)return showErr('Sila isi ID pengguna dan kata laluan.');
   if(!window.crypto?.subtle)return showErr('Pelayar ini tidak menyokong log masuk selamat. Buka melalui https.');
@@ -524,10 +549,12 @@ $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();
   const ok=(await sha('cd-hub|'+u+'|'+pw))===AUTH_HASH;
   $('#lgBtn').disabled=false;$('#lgBtn').textContent='Log masuk';
   if(!ok){fails++;if(fails>=5){lockUntil=Date.now()+30000;fails=0}$('#lgPass').value='';$('#lgPass').focus();return showErr('ID pengguna atau kata laluan salah.')}
-  store.set(AUTH_KEY,AUTH_HASH,$('#lgRemember').checked);showErr('');$('#lgPass').value='';
-  document.body.classList.remove('locked');UI.role='super';go('overview');toast('Selamat datang ke CIPTA DIGITAL Control Hub')});
-$('#logout').onclick=()=>confirmBox('Log keluar daripada dashboard?',()=>{store.del(AUTH_KEY);document.body.classList.add('locked');setTimeout(()=>$('#lgUser').focus(),50)});
-if(store.get(AUTH_KEY)===AUTH_HASH)document.body.classList.remove('locked');
+  showErr('');$('#lgPass').value='';startSession({type:'super'},$('#lgRemember').checked)});
+$('#logout').onclick=()=>confirmBox('Log keluar daripada dashboard?',()=>{const wasTenant=SES?.type==='tenant';store.del(AUTH_KEY);SES=null;document.body.classList.remove('tenant-mode');document.body.classList.add('locked');setMode(wasTenant?'tenant':'super')});
+{const v=store.get(AUTH_KEY);let t;
+ if(v===AUTH_HASH){SES={type:'super'};document.body.classList.remove('locked');render()}
+ else if(v&&v.startsWith('tenant:')&&(t=T(v.slice(7)))&&t.status==='active'){SES={type:'tenant',tenant:t.id};document.body.classList.add('tenant-mode');document.body.classList.remove('locked');UI.view='t-dash';render()}
+ else{store.del(AUTH_KEY);setMode(location.hash==='#tenant'?'tenant':'super')}}
 
 }
 </script>
