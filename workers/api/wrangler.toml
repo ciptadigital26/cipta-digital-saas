@@ -1,0 +1,23 @@
+name = "cipta-digital-hub-api"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+[vars]
+SUPABASE_URL = "https://YOUR-PROJECT.supabase.co"
+ROOT_DOMAIN = "ciptadigital.my"
+ALLOWED_ORIGINS = "https://hub.ciptadigital.my,http://localhost:5173"
+
+# Rahsia (JANGAN letak di sini):
+#   wrangler secret put SUPABASE_ANON_KEY
+#   wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "cipta-digital-media"
+
+[[kv_namespaces]]
+binding = "SITE_CACHE"
+id = "REPLACE_WITH_KV_ID"
+
+# Semua domain tenant diarahkan ke Worker ini (Cloudflare for SaaS / Custom Hostnames)
+# routes = [{ pattern = "*/*", zone_name = "ciptadigital.my" }]
