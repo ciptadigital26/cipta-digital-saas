@@ -1,0 +1,20 @@
+# OPR SMASID EXPRESS — Cloudflare Pages
+# Pilihan: hanya diperlukan jika anda deploy dengan `npx wrangler pages deploy`.
+# Jika guna Dashboard Cloudflare (sambung GitHub), tetapkan bindings di Dashboard.
+name = "opr-smasid-express"
+pages_build_output_dir = "."
+compatibility_date = "2026-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "opr-smasid-db"
+database_id = "GANTI_DENGAN_ID_D1_ANDA"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "opr-smasid-files"
+
+# Rahsia (JANGAN tulis di sini) — tetapkan di Dashboard atau:
+#   npx wrangler pages secret put TELEGRAM_BOT_TOKEN
+#   npx wrangler pages secret put TELEGRAM_CHAT_ID
+#   npx wrangler pages secret put ANTHROPIC_API_KEY

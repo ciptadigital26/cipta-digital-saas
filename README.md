@@ -14,6 +14,15 @@ Platform SaaS multi-tenant: setiap pelanggan mendapat website, dashboard, brandi
 | 6 | Domain & subscription | API domain/verify + pelan siap. Pembayaran: integrasi berasingan |
 | 7 | Testing, security audit, deployment | Belum |
 
+## Projek dalam repo ini
+
+| Folder | Projek | Hosting |
+|---|---|---|
+| `/` (`index.html`) | CIPTA DIGITAL White Label Control Hub (prototaip dashboard) | GitHub Pages |
+| `opr-smasid-express/` | **OPR SMASID EXPRESS** — sistem One Page Report sekolah (Cloudflare D1 + R2 + Functions) | Cloudflare Pages, *Root directory* `opr-smasid-express` |
+
+Arahan penuh OPR SMASID EXPRESS: [`opr-smasid-express/README.md`](opr-smasid-express/README.md).
+
 ## Struktur folder
 
 ```
